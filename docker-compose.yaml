@@ -1,0 +1,60 @@
+version: '3.7'
+
+services:
+  # Cliente 1
+  odoo_cliente1:
+    image: odoo:17.0                  # Imagen oficial de Odoo versión 17
+    container_name: odoo_cliente1     # Nombre del contenedor para el cliente 1
+    restart: unless-stopped           # Reinicia el contenedor si se detiene inesperadamente
+    ports:
+      - "8200:8069"                  # Mapea el puerto 8069 del contenedor al puerto 8200 del host
+    volumes:
+      - odoo-data-cliente1:/var/lib/odoo   # Volumen para los datos persistentes de Odoo
+      - ./config_cliente1:/etc/odoo        # Monta el archivo de configuración del cliente 1
+      - ./addons_cliente1:/mnt/extra-addons # Monta la carpeta de addons personalizados del cliente 1
+    depends_on:
+      - db_cliente1                    # Asegura que PostgreSQL esté listo antes de iniciar Odoo
+
+  db_cliente1:
+    image: postgres:16.0              # Imagen oficial de PostgreSQL versión 16
+    container_name: db_cliente1       # Nombre del contenedor de PostgreSQL para el cliente 1
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=cliente1_db       # Nombre de la base de datos
+      - POSTGRES_USER=cliente1_user   # Usuario de la base de datos
+      - POSTGRES_PASSWORD=cliente1_password # Contraseña de la base de datos
+      - PGDATA=/var/lib/postgresql/data/pgdata # Ruta de datos de PostgreSQL
+    volumes:
+      - db-data-cliente1:/var/lib/postgresql/data # Volumen para los datos de PostgreSQL
+
+  # Cliente 2
+  odoo_cliente2:
+    image: odoo:17.0
+    container_name: odoo_cliente2
+    restart: unless-stopped
+    ports:
+      - "8201:8069"                  # Mapea el puerto 8069 del contenedor al puerto 8201 del host
+    volumes:
+      - odoo-data-cliente2:/var/lib/odoo
+      - ./config_cliente2:/etc/odoo
+      - ./addons_cliente2:/mnt/extra-addons
+    depends_on:
+      - db_cliente2
+
+  db_cliente2:
+    image: postgres:16.0
+    container_name: db_cliente2
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=cliente2_db
+      - POSTGRES_USER=cliente2_user
+      - POSTGRES_PASSWORD=cliente2_password
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - db-data-cliente2:/var/lib/postgresql/data
+
+volumes:
+  odoo-data-cliente1:                 # Volumen para los datos de Odoo del cliente 1
+  db-data-cliente1:                   # Volumen para los datos de PostgreSQL del cliente 1
+  odoo-data-cliente2:                 # Volumen para los datos de Odoo del cliente 2
+  db-data-cliente2:                   # Volumen para los datos de PostgreSQL del cliente 2
